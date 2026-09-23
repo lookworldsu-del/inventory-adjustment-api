@@ -10,11 +10,11 @@ class WarehouseSeeder extends Seeder
     public function run(): void
     {
         Warehouse::firstOrCreate([
-            'name' => '上海仓库',
+            'name' => 'Shanghai Warehouse',
         ]);
 
         Warehouse::firstOrCreate([
-            'name' => '广州仓库',
+            'name' => 'Guangzhou Warehouse',
         ]);
     }
 }

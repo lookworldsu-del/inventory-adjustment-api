@@ -79,19 +79,17 @@ Migration 会创建五张业务表和 Laravel 默认的辅助表。独立测试�
 
 | 批次 | 商品 | 仓库 | 初始数量 |
 | --- | --- | --- | ---: |
-| `BATCH-001` | `MOUSE-001` — 无线鼠标 | 上海仓库 | 100 |
-| `BATCH-002` | `KEYBOARD-001` — 机械键盘 | 广州仓库 | 50 |
+| `BATCH-001` | `MOUSE-001` — Wireless Mouse | Shanghai Warehouse | 100 |
+| `BATCH-002` | `KEYBOARD-001` — Mechanical Keyboard | Guangzhou Warehouse | 50 |
 
-演示数据的显示名称使用中文；下表同时给出原因的英文含义。JSON 字段名和原因类型使用英文。
-
-| 原因名称 | 英文含义 | 类型 | 已启用 | 可用于新增库存调整 |
-| --- | --- | --- | --- | --- |
-| 实物盘点纠正 | Physical count correction | `inventory_adjustment` | 是 | 是 |
-| 商品损坏 | Damaged items | `inventory_adjustment` | 是 | 是 |
-| 商品遗失 | Missing items | `inventory_adjustment` | 是 | 是 |
-| 数据录入纠正 | Data entry correction | `inventory_adjustment` | 是 | 是 |
-| 已停用的盘点原因 | Retired physical count reason | `inventory_adjustment` | 否 | 否 |
-| 订单取消 | Order cancellation | `order_cancellation` | 是 | 否 |
+| 原因名称 | 类型 | 已启用 | 可用于新增库存调整 |
+| --- | --- | --- | --- |
+| Physical count correction | `inventory_adjustment` | 是 | 是 |
+| Damaged items | `inventory_adjustment` | 是 | 是 |
+| Missing items | `inventory_adjustment` | 是 | 是 |
+| Data entry correction | `inventory_adjustment` | 是 | 是 |
+| Retired physical count reason | `inventory_adjustment` | 否 | 否 |
+| Order cancellation | `order_cancellation` | 是 | 否 |
 
 在全新的空数据库中，`BATCH-001` 的 ID 为 `1`，四个可用原因的 ID 为 `1`–`4`。已有数据库中的 ID 可能不同；必要时通过原因列表接口获取原因 ID，并查看数据库中已填充的批次。
 
@@ -117,10 +115,10 @@ curl -sS http://127.0.0.1:8001/api/v1/adjustment-reasons \
 ```json
 {
   "data": [
-    {"id": 1, "name": "实物盘点纠正"},
-    {"id": 2, "name": "商品损坏"},
-    {"id": 3, "name": "商品遗失"},
-    {"id": 4, "name": "数据录入纠正"}
+    {"id": 1, "name": "Physical count correction"},
+    {"id": 2, "name": "Damaged items"},
+    {"id": 3, "name": "Missing items"},
+    {"id": 4, "name": "Data entry correction"}
   ]
 }
 ```
@@ -166,10 +164,10 @@ curl -i -X POST http://127.0.0.1:8001/api/v1/inventory-adjustments \
       "id": 1,
       "batch_number": "BATCH-001",
       "quantity": 92,
-      "product": {"id": 1, "name": "无线鼠标", "sku": "MOUSE-001"},
-      "warehouse": {"id": 1, "name": "上海仓库"}
+      "product": {"id": 1, "name": "Wireless Mouse", "sku": "MOUSE-001"},
+      "warehouse": {"id": 1, "name": "Shanghai Warehouse"}
     },
-    "reason": {"id": 1, "name": "实物盘点纠正"}
+    "reason": {"id": 1, "name": "Physical count correction"}
   }
 }
 ```
@@ -197,14 +195,14 @@ curl -i http://127.0.0.1:8001/api/v1/inventory-adjustments/1 \
 
 ```json
 {
-  "message": "调整后的数量不能小于 0。",
+  "message": "The new quantity must be at least 0.",
   "errors": {
-    "new_quantity": ["调整后的数量不能小于 0。"]
+    "new_quantity": ["The new quantity must be at least 0."]
   }
 }
 ```
 
-自定义验证错误信息目前使用中文；`errors` 下的字段名标识哪个输入不合法。多个字段同时验证失败时，顶层 `message` 的具体文本可能不同。
+`errors` 下的字段名标识哪个输入不合法。多个字段同时验证失败时，顶层 `message` 的具体文本可能不同。
 
 ## 自动化测试
 

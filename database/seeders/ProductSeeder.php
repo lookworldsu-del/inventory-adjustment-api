@@ -11,12 +11,12 @@ class ProductSeeder extends Seeder
     {
         Product::firstOrCreate(
             ['sku' => 'MOUSE-001'],
-            ['name' => '无线鼠标'],
+            ['name' => 'Wireless Mouse'],
         );
 
         Product::firstOrCreate(
             ['sku' => 'KEYBOARD-001'],
-            ['name' => '机械键盘'],
+            ['name' => 'Mechanical Keyboard'],
         );
     }
 }

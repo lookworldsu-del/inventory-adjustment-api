@@ -33,7 +33,7 @@ class InventoryAdjustmentController extends Controller
 
             if ($reason === null) {
                 throw ValidationException::withMessages([
-                    'reason_id' => '请选择已启用且适用于库存调整的原因。',
+                    'reason_id' => 'Please select an active reason that is valid for inventory adjustments.',
                 ]);
             }
 

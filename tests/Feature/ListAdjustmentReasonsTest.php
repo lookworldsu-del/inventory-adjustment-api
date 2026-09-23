@@ -12,11 +12,11 @@ class ListAdjustmentReasonsTest extends TestCase
 
     public function test_it_lists_only_active_inventory_reasons_in_id_order(): void
     {
-        $first = AdjustmentReason::factory()->create(['name' => 'Z 盘点纠正']);
+        $first = AdjustmentReason::factory()->create(['name' => 'Z Physical count correction']);
         AdjustmentReason::factory()->inactive()->create();
         AdjustmentReason::factory()->forOrders()->create();
         AdjustmentReason::factory()->inactive()->forOrders()->create();
-        $second = AdjustmentReason::factory()->create(['name' => 'A 商品损坏']);
+        $second = AdjustmentReason::factory()->create(['name' => 'A Damaged items']);
 
         $this->getJson(route('adjustment-reasons.index'))
             ->assertOk()

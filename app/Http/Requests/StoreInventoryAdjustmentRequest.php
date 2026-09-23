@@ -53,12 +53,12 @@ class StoreInventoryAdjustmentRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'batch_id.exists' => '所选批次不存在。',
-            'reason_id.exists' => '请选择已启用且适用于库存调整的原因。',
-            'new_quantity.integer' => '调整后的数量必须是整数。',
-            'new_quantity.min' => '调整后的数量不能小于 0。',
-            'new_quantity.max' => '调整后的数量超出允许范围。',
-            'note.max' => '备注不能超过 1000 个字符。',
+            'batch_id.exists' => 'The selected batch does not exist.',
+            'reason_id.exists' => 'Please select an active reason that is valid for inventory adjustments.',
+            'new_quantity.integer' => 'The new quantity must be an integer.',
+            'new_quantity.min' => 'The new quantity must be at least 0.',
+            'new_quantity.max' => 'The new quantity must not exceed 4294967295.',
+            'note.max' => 'The note must not exceed 1000 characters.',
         ];
     }
 }

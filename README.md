@@ -1,6 +1,6 @@
 # Inventory Adjustment API
 
-English | [简体中文](README.zh-CN.md)
+English | [Simplified Chinese](README.zh-CN.md)
 
 A standalone Laravel API for adjusting warehouse batch quantities with predefined reasons. Each adjustment records the previous quantity, the counted quantity, their difference, a reason, and an optional note. The adjustment record and the batch quantity are saved in one database transaction.
 
@@ -79,19 +79,17 @@ Fresh seeding creates **2 warehouses, 2 products, 2 batches, 6 reasons, and no a
 
 | Batch | Product | Warehouse | Initial quantity |
 | --- | --- | --- | ---: |
-| `BATCH-001` | `MOUSE-001` — 无线鼠标 (Wireless mouse) | 上海仓库 (Shanghai warehouse) | 100 |
-| `BATCH-002` | `KEYBOARD-001` — 机械键盘 (Mechanical keyboard) | 广州仓库 (Guangzhou warehouse) | 50 |
+| `BATCH-001` | `MOUSE-001` — Wireless Mouse | Shanghai Warehouse | 100 |
+| `BATCH-002` | `KEYBOARD-001` — Mechanical Keyboard | Guangzhou Warehouse | 50 |
 
-Seeded display labels are Chinese; their English meanings are provided here. JSON field names and reason types use English.
-
-| Reason label | English meaning | Type | Active | Available for new adjustments |
-| --- | --- | --- | --- | --- |
-| 实物盘点纠正 | Physical count correction | `inventory_adjustment` | Yes | Yes |
-| 商品损坏 | Damaged items | `inventory_adjustment` | Yes | Yes |
-| 商品遗失 | Missing items | `inventory_adjustment` | Yes | Yes |
-| 数据录入纠正 | Data entry correction | `inventory_adjustment` | Yes | Yes |
-| 已停用的盘点原因 | Retired physical count reason | `inventory_adjustment` | No | No |
-| 订单取消 | Order cancellation | `order_cancellation` | Yes | No |
+| Reason | Type | Active | Available for new adjustments |
+| --- | --- | --- | --- |
+| Physical count correction | `inventory_adjustment` | Yes | Yes |
+| Damaged items | `inventory_adjustment` | Yes | Yes |
+| Missing items | `inventory_adjustment` | Yes | Yes |
+| Data entry correction | `inventory_adjustment` | Yes | Yes |
+| Retired physical count reason | `inventory_adjustment` | No | No |
+| Order cancellation | `order_cancellation` | Yes | No |
 
 On a fresh, empty database, `BATCH-001` has ID `1` and the four usable reasons have IDs `1`–`4`. IDs may differ in an existing database; use the reasons endpoint and inspect the seeded batches when necessary.
 
@@ -117,10 +115,10 @@ curl -sS http://127.0.0.1:8001/api/v1/adjustment-reasons \
 ```json
 {
   "data": [
-    {"id": 1, "name": "实物盘点纠正"},
-    {"id": 2, "name": "商品损坏"},
-    {"id": 3, "name": "商品遗失"},
-    {"id": 4, "name": "数据录入纠正"}
+    {"id": 1, "name": "Physical count correction"},
+    {"id": 2, "name": "Damaged items"},
+    {"id": 3, "name": "Missing items"},
+    {"id": 4, "name": "Data entry correction"}
   ]
 }
 ```
@@ -166,10 +164,10 @@ Example `201 Created` response for the first adjustment on a freshly seeded data
       "id": 1,
       "batch_number": "BATCH-001",
       "quantity": 92,
-      "product": {"id": 1, "name": "无线鼠标", "sku": "MOUSE-001"},
-      "warehouse": {"id": 1, "name": "上海仓库"}
+      "product": {"id": 1, "name": "Wireless Mouse", "sku": "MOUSE-001"},
+      "warehouse": {"id": 1, "name": "Shanghai Warehouse"}
     },
-    "reason": {"id": 1, "name": "实物盘点纠正"}
+    "reason": {"id": 1, "name": "Physical count correction"}
   }
 }
 ```
@@ -197,14 +195,14 @@ Example when `new_quantity` is `-1`:
 
 ```json
 {
-  "message": "调整后的数量不能小于 0。",
+  "message": "The new quantity must be at least 0.",
   "errors": {
-    "new_quantity": ["调整后的数量不能小于 0。"]
+    "new_quantity": ["The new quantity must be at least 0."]
   }
 }
 ```
 
-This message means “The adjusted quantity cannot be less than 0.” Custom validation messages currently use Chinese; field names under `errors` identify the invalid inputs. The exact top-level error text can differ when several fields fail validation.
+Field names under `errors` identify the invalid inputs. The exact top-level error text can differ when several fields fail validation.
 
 ## Automated tests
 

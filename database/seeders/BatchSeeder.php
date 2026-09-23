@@ -11,8 +11,8 @@ class BatchSeeder extends Seeder
 {
     public function run(): void
     {
-        $shanghaiWarehouse = Warehouse::where('name', '上海仓库')->firstOrFail();
-        $guangzhouWarehouse = Warehouse::where('name', '广州仓库')->firstOrFail();
+        $shanghaiWarehouse = Warehouse::where('name', 'Shanghai Warehouse')->firstOrFail();
+        $guangzhouWarehouse = Warehouse::where('name', 'Guangzhou Warehouse')->firstOrFail();
 
         $mouse = Product::where('sku', 'MOUSE-001')->firstOrFail();
         $keyboard = Product::where('sku', 'KEYBOARD-001')->firstOrFail();

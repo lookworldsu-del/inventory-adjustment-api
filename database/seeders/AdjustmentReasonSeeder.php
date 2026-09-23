@@ -10,10 +10,10 @@ class AdjustmentReasonSeeder extends Seeder
     public function run(): void
     {
         $names = [
-            '实物盘点纠正',
-            '商品损坏',
-            '商品遗失',
-            '数据录入纠正',
+            'Physical count correction',
+            'Damaged items',
+            'Missing items',
+            'Data entry correction',
         ];
 
         foreach ($names as $name) {
@@ -28,7 +28,7 @@ class AdjustmentReasonSeeder extends Seeder
 
         AdjustmentReason::firstOrCreate(
             [
-                'name' => '已停用的盘点原因',
+                'name' => 'Retired physical count reason',
                 'type' => 'inventory_adjustment',
             ],
             ['is_active' => false],
@@ -36,7 +36,7 @@ class AdjustmentReasonSeeder extends Seeder
 
         AdjustmentReason::firstOrCreate(
             [
-                'name' => '订单取消',
+                'name' => 'Order cancellation',
                 'type' => 'order_cancellation',
             ],
             ['is_active' => true],

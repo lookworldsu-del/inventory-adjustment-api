@@ -22,7 +22,7 @@ class StoreInventoryAdjustmentTest extends TestCase
             'batch_id' => $batch->id,
             'reason_id' => $reason->id,
             'new_quantity' => 92,
-            'note' => '早班盘点，实际数量为 92',
+            'note' => 'Morning stock count: actual quantity is 92.',
         ]);
 
         $response->assertCreated()
@@ -31,7 +31,7 @@ class StoreInventoryAdjustmentTest extends TestCase
             ->assertJsonPath('data.old_quantity', 100)
             ->assertJsonPath('data.new_quantity', 92)
             ->assertJsonPath('data.quantity_difference', -8)
-            ->assertJsonPath('data.note', '早班盘点，实际数量为 92')
+            ->assertJsonPath('data.note', 'Morning stock count: actual quantity is 92.')
             ->assertJsonPath('data.batch.id', $batch->id)
             ->assertJsonPath('data.batch.quantity', 92)
             ->assertJsonPath('data.batch.product.id', $batch->product_id)
@@ -46,7 +46,7 @@ class StoreInventoryAdjustmentTest extends TestCase
             'old_quantity' => 100,
             'new_quantity' => 92,
             'quantity_difference' => -8,
-            'note' => '早班盘点，实际数量为 92',
+            'note' => 'Morning stock count: actual quantity is 92.',
         ]);
         $this->assertDatabaseHas('batches', ['id' => $batch->id, 'quantity' => 92]);
         $this->assertDatabaseHas('batches', ['id' => $otherBatch->id, 'quantity' => 50]);
@@ -118,8 +118,8 @@ class StoreInventoryAdjustmentTest extends TestCase
             'omitted' => [[], null],
             'null' => [['note' => null], null],
             'empty string' => [['note' => ''], null],
-            'surrounding whitespace' => [['note' => '  人工盘点  '], '人工盘点'],
-            'maximum unicode length' => [['note' => str_repeat('盘', 1000)], str_repeat('盘', 1000)],
+            'surrounding whitespace' => [['note' => '  Manual stock count  '], 'Manual stock count'],
+            'maximum unicode length' => [['note' => str_repeat('é', 1000)], str_repeat('é', 1000)],
         ];
     }
 
@@ -160,7 +160,7 @@ class StoreInventoryAdjustmentTest extends TestCase
             'nonexistent reason' => [['reason_id' => 99999999], [], 'reason_id'],
             'non-integer reason' => [['reason_id' => 'invalid'], [], 'reason_id'],
             'array reason' => [['reason_id' => [1]], [], 'reason_id'],
-            'free text cannot replace reason' => [['reason' => '随便写一个原因'], ['reason_id'], 'reason_id'],
+            'free text cannot replace reason' => [['reason' => 'An arbitrary free-text reason'], ['reason_id'], 'reason_id'],
             'missing quantity' => [[], ['new_quantity'], 'new_quantity'],
             'null quantity' => [['new_quantity' => null], [], 'new_quantity'],
             'negative quantity' => [['new_quantity' => -1], [], 'new_quantity'],
@@ -170,7 +170,7 @@ class StoreInventoryAdjustmentTest extends TestCase
             'quantity overflow' => [['new_quantity' => 4294967296], [], 'new_quantity'],
             'numeric note' => [['note' => 123], [], 'note'],
             'array note' => [['note' => ['text']], [], 'note'],
-            'note too long' => [['note' => str_repeat('盘', 1001)], [], 'note'],
+            'note too long' => [['note' => str_repeat('é', 1001)], [], 'note'],
         ];
     }
 

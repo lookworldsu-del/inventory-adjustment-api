@@ -13,7 +13,7 @@ class ShowInventoryAdjustmentTest extends TestCase
 
     public function test_it_shows_the_adjustment_with_its_batch_product_warehouse_and_reason(): void
     {
-        $adjustment = InventoryAdjustment::factory()->create(['note' => '盘点少了 8 件']);
+        $adjustment = InventoryAdjustment::factory()->create(['note' => 'Stock count found 8 missing items.']);
         $batch = $adjustment->batch;
 
         $this->getJson(route('inventory-adjustments.show', $adjustment))
@@ -26,7 +26,7 @@ class ShowInventoryAdjustmentTest extends TestCase
                     'old_quantity' => 100,
                     'new_quantity' => 92,
                     'quantity_difference' => -8,
-                    'note' => '盘点少了 8 件',
+                    'note' => 'Stock count found 8 missing items.',
                     'batch' => [
                         'id' => $batch->id,
                         'batch_number' => $batch->batch_number,

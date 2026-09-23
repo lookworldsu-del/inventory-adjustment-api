@@ -22,32 +22,32 @@ class DemoSeederTest extends TestCase
         $keyboardBatch = Batch::query()->where('batch_number', 'BATCH-002')->firstOrFail();
 
         $this->assertSame(100, $mouseBatch->quantity);
-        $this->assertSame('上海仓库', $mouseBatch->warehouse->name);
+        $this->assertSame('Shanghai Warehouse', $mouseBatch->warehouse->name);
         $this->assertSame('MOUSE-001', $mouseBatch->product->sku);
-        $this->assertSame('无线鼠标', $mouseBatch->product->name);
+        $this->assertSame('Wireless Mouse', $mouseBatch->product->name);
         $this->assertSame(50, $keyboardBatch->quantity);
-        $this->assertSame('广州仓库', $keyboardBatch->warehouse->name);
+        $this->assertSame('Guangzhou Warehouse', $keyboardBatch->warehouse->name);
         $this->assertSame('KEYBOARD-001', $keyboardBatch->product->sku);
-        $this->assertSame('机械键盘', $keyboardBatch->product->name);
+        $this->assertSame('Mechanical Keyboard', $keyboardBatch->product->name);
 
         $this->getJson(route('adjustment-reasons.index'))
             ->assertOk()
             ->assertJsonCount(4, 'data')
             ->assertJsonPath('data.*.name', [
-                '实物盘点纠正',
-                '商品损坏',
-                '商品遗失',
-                '数据录入纠正',
+                'Physical count correction',
+                'Damaged items',
+                'Missing items',
+                'Data entry correction',
             ]);
 
         $this->assertDatabaseHas('adjustment_reasons', [
-            'name' => '已停用的盘点原因',
+            'name' => 'Retired physical count reason',
             'type' => 'inventory_adjustment',
             'is_active' => false,
         ]);
 
         $this->assertDatabaseHas('adjustment_reasons', [
-            'name' => '订单取消',
+            'name' => 'Order cancellation',
             'type' => 'order_cancellation',
             'is_active' => true,
         ]);
@@ -57,7 +57,7 @@ class DemoSeederTest extends TestCase
     {
         $this->seed(DatabaseSeeder::class);
         $batch = Batch::query()->where('batch_number', 'BATCH-001')->firstOrFail();
-        $reason = AdjustmentReason::query()->where('name', '实物盘点纠正')->firstOrFail();
+        $reason = AdjustmentReason::query()->where('name', 'Physical count correction')->firstOrFail();
 
         $response = $this->postJson(route('inventory-adjustments.store'), [
             'batch_id' => $batch->id,
