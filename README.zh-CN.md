@@ -217,14 +217,14 @@ php artisan test --compact
 
 `phpunit.xml` 强制使用 MySQL 连接和数据库名 `inventory_adjustment_testing`。主机、端口和凭据读取本地环境配置。基础测试类和并发工作进程都会先检查数据库，再继续执行。测试会重建或清理专用测试库，因此该库只能存放可丢弃的测试数据。请串行运行测试：由于数据库名固定，不支持 `--parallel`，也不支持多个测试任务同时使用同一个数据库。
 
-已验证结果：**56 条测试用例通过，298 个断言**，包括 54 条业务测试和 2 条框架示例测试。
+已验证结果：**56 条测试用例通过，312 个断言**，包括 54 条业务测试和 2 条框架示例测试。
 
 | 测试类 | 覆盖场景 |
 | --- | --- |
-| `StoreInventoryAdjustmentTest` | 创建调整、数量增加/减少/归零/不变、数值边界、可选备注、非法输入、不可用原因、服务端计算字段、连续调整，以及不影响其他批次 |
+| `StoreInventoryAdjustmentTest` | 创建调整、数量增加/减少/归零/不变、数值边界、可选备注、非法输入、英文验证提示、不可用原因、服务端计算字段、连续调整，以及不影响其他批次 |
 | `ListAdjustmentReasonsTest` | 启用状态和类型过滤、输出字段、排序、空列表 |
 | `ShowInventoryAdjustmentTest` | 关联批次/商品/仓库/原因、404、历史数量和原因 |
-| `InventoryAdjustmentTransactionTest` | 每次写入后的异常回滚；初次验证后原因或批次发生变化时重新检查 |
+| `InventoryAdjustmentTransactionTest` | 每次写入后的异常回滚；初次验证后原因或批次发生变化时重新检查，包括原因不可用时的英文提示 |
 | `InventoryAdjustmentConcurrencyTest` | 两个竞争请求正确形成 `100 → 92 → 90` 的调整记录 |
 | `DemoSeederTest` | 演示数据完整、关联正确、重复填充不产生重复数据或重置库存 |
 

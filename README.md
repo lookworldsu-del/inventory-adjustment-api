@@ -217,14 +217,14 @@ The suite uses **real MySQL**, including two independent PHP processes for the c
 
 `phpunit.xml` forces the MySQL connection and database name `inventory_adjustment_testing`. Host, port, and credentials come from the local environment. Both the base test class and concurrency workers verify the database before proceeding. Tests recreate or clear the dedicated test database, so it must contain only disposable test data. Run the suite serially: its fixed database name does not support `--parallel` or simultaneous test runs against the same database.
 
-Verified result: **56 passing test cases, 298 assertions**, including 54 business cases and 2 framework examples.
+Verified result: **56 passing test cases, 312 assertions**, including 54 business cases and 2 framework examples.
 
 | Test class | Coverage |
 | --- | --- |
-| `StoreInventoryAdjustmentTest` | Creation, increases/decreases/zero/unchanged quantities, numeric boundaries, optional notes, invalid inputs, unavailable reasons, server-calculated fields, successive adjustments, and isolation from other batches |
+| `StoreInventoryAdjustmentTest` | Creation, increases/decreases/zero/unchanged quantities, numeric boundaries, optional notes, invalid inputs, English validation messages, unavailable reasons, server-calculated fields, successive adjustments, and isolation from other batches |
 | `ListAdjustmentReasonsTest` | Active/type filtering, output fields, ordering, empty results |
 | `ShowInventoryAdjustmentTest` | Related batch/product/warehouse/reason, 404, historical quantities and reasons |
-| `InventoryAdjustmentTransactionTest` | Rollback after each write; revalidation when a reason or batch changes after initial validation |
+| `InventoryAdjustmentTransactionTest` | Rollback after each write; revalidation when a reason or batch changes after initial validation, including English reason errors |
 | `InventoryAdjustmentConcurrencyTest` | Two competing requests correctly produce `100 → 92 → 90` |
 | `DemoSeederTest` | Complete seed data, valid relationships, repeat seeding without duplicates or stock resets |
 

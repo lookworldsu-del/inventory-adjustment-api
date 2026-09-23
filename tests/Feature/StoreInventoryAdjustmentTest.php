@@ -124,8 +124,12 @@ class StoreInventoryAdjustmentTest extends TestCase
     }
 
     #[DataProvider('invalidInputs')]
-    public function test_it_rejects_invalid_input_without_changing_stock(array $overrides, array $missingFields, string $errorField): void
-    {
+    public function test_it_rejects_invalid_input_without_changing_stock(
+        array $overrides,
+        array $missingFields,
+        string $errorField,
+        ?string $expectedMessage = null
+    ): void {
         $batch = Batch::factory()->create(['quantity' => 100]);
         $reason = AdjustmentReason::factory()->create();
         $input = array_replace([
@@ -138,39 +142,43 @@ class StoreInventoryAdjustmentTest extends TestCase
             unset($input[$field]);
         }
 
-        $this->postJson(route('inventory-adjustments.store'), $input)
+        $response = $this->postJson(route('inventory-adjustments.store'), $input)
             ->assertUnprocessable()
             ->assertJsonValidationErrors([$errorField]);
+
+        if ($expectedMessage !== null) {
+            $response->assertJsonPath('errors.'.$errorField.'.0', $expectedMessage);
+        }
 
         $this->assertDatabaseHas('batches', ['id' => $batch->id, 'quantity' => 100]);
         $this->assertDatabaseEmpty('inventory_adjustments');
     }
 
-    /** @return array<string, array{array<string, mixed>, list<string>, string}> */
+    /** @return array<string, array{0: array<string, mixed>, 1: list<string>, 2: string, 3?: string}> */
     public static function invalidInputs(): array
     {
         return [
             'missing batch' => [[], ['batch_id'], 'batch_id'],
             'null batch' => [['batch_id' => null], [], 'batch_id'],
-            'nonexistent batch' => [['batch_id' => 99999999], [], 'batch_id'],
+            'nonexistent batch' => [['batch_id' => 99999999], [], 'batch_id', 'The selected batch does not exist.'],
             'non-integer batch' => [['batch_id' => 'invalid'], [], 'batch_id'],
             'array batch' => [['batch_id' => [1]], [], 'batch_id'],
             'missing reason' => [[], ['reason_id'], 'reason_id'],
             'null reason' => [['reason_id' => null], [], 'reason_id'],
-            'nonexistent reason' => [['reason_id' => 99999999], [], 'reason_id'],
+            'nonexistent reason' => [['reason_id' => 99999999], [], 'reason_id', 'Please select an active reason that is valid for inventory adjustments.'],
             'non-integer reason' => [['reason_id' => 'invalid'], [], 'reason_id'],
             'array reason' => [['reason_id' => [1]], [], 'reason_id'],
             'free text cannot replace reason' => [['reason' => 'An arbitrary free-text reason'], ['reason_id'], 'reason_id'],
             'missing quantity' => [[], ['new_quantity'], 'new_quantity'],
             'null quantity' => [['new_quantity' => null], [], 'new_quantity'],
-            'negative quantity' => [['new_quantity' => -1], [], 'new_quantity'],
-            'fractional quantity' => [['new_quantity' => 92.5], [], 'new_quantity'],
-            'text quantity' => [['new_quantity' => 'many'], [], 'new_quantity'],
-            'array quantity' => [['new_quantity' => [92]], [], 'new_quantity'],
-            'quantity overflow' => [['new_quantity' => 4294967296], [], 'new_quantity'],
+            'negative quantity' => [['new_quantity' => -1], [], 'new_quantity', 'The new quantity must be at least 0.'],
+            'fractional quantity' => [['new_quantity' => 92.5], [], 'new_quantity', 'The new quantity must be an integer.'],
+            'text quantity' => [['new_quantity' => 'many'], [], 'new_quantity', 'The new quantity must be an integer.'],
+            'array quantity' => [['new_quantity' => [92]], [], 'new_quantity', 'The new quantity must be an integer.'],
+            'quantity overflow' => [['new_quantity' => 4294967296], [], 'new_quantity', 'The new quantity must not exceed 4294967295.'],
             'numeric note' => [['note' => 123], [], 'note'],
             'array note' => [['note' => ['text']], [], 'note'],
-            'note too long' => [['note' => str_repeat('é', 1001)], [], 'note'],
+            'note too long' => [['note' => str_repeat('é', 1001)], [], 'note', 'The note must not exceed 1000 characters.'],
         ];
     }
 
@@ -184,7 +192,9 @@ class StoreInventoryAdjustmentTest extends TestCase
             'batch_id' => $batch->id,
             'reason_id' => $reason->id,
             'new_quantity' => 92,
-        ])->assertUnprocessable()->assertJsonValidationErrors(['reason_id']);
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors(['reason_id'])
+            ->assertJsonPath('errors.reason_id.0', 'Please select an active reason that is valid for inventory adjustments.');
 
         $this->assertDatabaseHas('batches', ['id' => $batch->id, 'quantity' => 100]);
         $this->assertDatabaseEmpty('inventory_adjustments');

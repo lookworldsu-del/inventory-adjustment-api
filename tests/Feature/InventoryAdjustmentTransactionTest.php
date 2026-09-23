@@ -85,7 +85,9 @@ class InventoryAdjustmentTransactionTest extends TestCase
             'batch_id' => $batch->id,
             'reason_id' => $reason->id,
             'new_quantity' => 92,
-        ])->assertUnprocessable()->assertJsonValidationErrors(['reason_id']);
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors(['reason_id'])
+            ->assertJsonPath('errors.reason_id.0', 'Please select an active reason that is valid for inventory adjustments.');
 
         $this->assertDatabaseEmpty('inventory_adjustments');
         $this->assertDatabaseHas('batches', ['id' => $batch->id, 'quantity' => 100]);
