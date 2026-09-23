@@ -234,6 +234,67 @@ To run only the creation tests:
 php artisan test --compact --filter=StoreInventoryAdjustmentTest
 ```
 
+## Database schema
+
+The five business tables are defined in [database/migrations](database/migrations). The types below describe the MySQL schema; Laravel's standard support tables are omitted.
+
+Every business table includes an auto-incrementing `id` (`BIGINT UNSIGNED`, primary key) and nullable `created_at` / `updated_at` (`TIMESTAMP`) columns maintained by Eloquent. All other columns are non-nullable except `inventory_adjustments.note`.
+
+```mermaid
+erDiagram
+    warehouses ||--o{ batches : stores
+    products ||--o{ batches : has
+    batches ||--o{ inventory_adjustments : has
+    adjustment_reasons ||--o{ inventory_adjustments : explains
+```
+
+Each batch belongs to exactly one warehouse and one product. Each adjustment belongs to exactly one batch and one reason. A warehouse, product, batch, or reason can exist before any related child rows are created.
+
+### `warehouses`
+
+| Column | MySQL type | Purpose / constraints |
+| --- | --- | --- |
+| `name` | `VARCHAR(100)` | Warehouse display name, e.g. `Shanghai Warehouse` |
+
+### `products`
+
+| Column | MySQL type | Purpose / constraints |
+| --- | --- | --- |
+| `name` | `VARCHAR(100)` | Product display name, e.g. `Wireless Mouse` |
+| `sku` | `VARCHAR(64)` | Product identifier; unique across all products |
+
+### `batches`
+
+| Column | MySQL type | Purpose / constraints |
+| --- | --- | --- |
+| `batch_number` | `VARCHAR(64)` | Batch identifier; unique across all batches |
+| `warehouse_id` | `BIGINT UNSIGNED` | Foreign key to `warehouses.id` |
+| `product_id` | `BIGINT UNSIGNED` | Foreign key to `products.id` |
+| `quantity` | `INT UNSIGNED` | Current stock quantity; defaults to `0` |
+
+### `adjustment_reasons`
+
+| Column | MySQL type | Purpose / constraints |
+| --- | --- | --- |
+| `name` | `VARCHAR(100)` | Predefined display name, e.g. `Physical count correction` |
+| `type` | `VARCHAR(50)` | Business purpose, e.g. `inventory_adjustment` or `order_cancellation` |
+| `is_active` | `TINYINT(1)` | Boolean availability flag; defaults to `true` |
+
+### `inventory_adjustments`
+
+| Column | MySQL type | Purpose / constraints |
+| --- | --- | --- |
+| `batch_id` | `BIGINT UNSIGNED` | Foreign key to `batches.id` |
+| `reason_id` | `BIGINT UNSIGNED` | Foreign key to `adjustment_reasons.id` |
+| `old_quantity` | `INT UNSIGNED` | Snapshot of stock before this adjustment |
+| `new_quantity` | `INT UNSIGNED` | Snapshot of the counted quantity applied by this adjustment |
+| `quantity_difference` | `BIGINT` (signed) | Calculated by the application as `new_quantity - old_quantity` |
+| `note` | `TEXT`, nullable | Optional details; the API limits input to 1,000 characters |
+
+All four foreign keys use `ON DELETE RESTRICT`, preventing deletion of rows that are still referenced. `quantity`, `old_quantity`, and `new_quantity` accept `0` through `4294967295`; the signed difference supports both increases and decreases across that full range.
+
+The application checks that a selected reason is active and has type `inventory_adjustment`, both during request validation and inside the transaction. These availability rules, the note length limit, and the difference calculation are application rules, not database `CHECK` constraints or generated columns.
+
 ## Design decisions
 
 - **Five business tables.** A warehouse and product each have many batches; a batch belongs to one warehouse and one product. Adjustments belong to a batch and a predefined reason. Foreign keys restrict deletion of referenced rows.

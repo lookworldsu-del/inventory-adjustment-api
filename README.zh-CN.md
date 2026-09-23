@@ -234,6 +234,67 @@ php artisan test --compact
 php artisan test --compact --filter=StoreInventoryAdjustmentTest
 ```
 
+## 数据表结构
+
+五张业务表定义在 [database/migrations](database/migrations) 中。下表列出 MySQL 数据类型，省略 Laravel 默认的辅助表。
+
+每张业务表都有自增主键 `id`（`BIGINT UNSIGNED`），以及由 Eloquent 维护、允许为 `NULL` 的 `created_at` / `updated_at`（`TIMESTAMP`）。其余字段中，只有 `inventory_adjustments.note` 允许为 `NULL`。
+
+```mermaid
+erDiagram
+    warehouses ||--o{ batches : stores
+    products ||--o{ batches : has
+    batches ||--o{ inventory_adjustments : has
+    adjustment_reasons ||--o{ inventory_adjustments : explains
+```
+
+每个批次属于且仅属于一个仓库和一个商品。每条调整记录属于且仅属于一个批次和一个原因。仓库、商品、批次或原因都可以先存在，再创建与其关联的子记录。
+
+### `warehouses`
+
+| 字段 | MySQL 类型 | 用途 / 约束 |
+| --- | --- | --- |
+| `name` | `VARCHAR(100)` | 仓库显示名称，例如 `Shanghai Warehouse` |
+
+### `products`
+
+| 字段 | MySQL 类型 | 用途 / 约束 |
+| --- | --- | --- |
+| `name` | `VARCHAR(100)` | 商品显示名称，例如 `Wireless Mouse` |
+| `sku` | `VARCHAR(64)` | 商品编号，在所有商品中唯一 |
+
+### `batches`
+
+| 字段 | MySQL 类型 | 用途 / 约束 |
+| --- | --- | --- |
+| `batch_number` | `VARCHAR(64)` | 批次编号，在所有批次中唯一 |
+| `warehouse_id` | `BIGINT UNSIGNED` | 外键，关联 `warehouses.id` |
+| `product_id` | `BIGINT UNSIGNED` | 外键，关联 `products.id` |
+| `quantity` | `INT UNSIGNED` | 当前库存数量，默认值为 `0` |
+
+### `adjustment_reasons`
+
+| 字段 | MySQL 类型 | 用途 / 约束 |
+| --- | --- | --- |
+| `name` | `VARCHAR(100)` | 预定义原因的显示名称，例如 `Physical count correction` |
+| `type` | `VARCHAR(50)` | 适用业务，例如 `inventory_adjustment` 或 `order_cancellation` |
+| `is_active` | `TINYINT(1)` | 表示是否启用的布尔值，默认值为 `true` |
+
+### `inventory_adjustments`
+
+| 字段 | MySQL 类型 | 用途 / 约束 |
+| --- | --- | --- |
+| `batch_id` | `BIGINT UNSIGNED` | 外键，关联 `batches.id` |
+| `reason_id` | `BIGINT UNSIGNED` | 外键，关联 `adjustment_reasons.id` |
+| `old_quantity` | `INT UNSIGNED` | 本次调整前的库存数量快照 |
+| `new_quantity` | `INT UNSIGNED` | 本次调整采用的实物盘点数量快照 |
+| `quantity_difference` | `BIGINT`（有符号） | 应用计算的差值：`new_quantity - old_quantity` |
+| `note` | `TEXT`，允许为 `NULL` | 可选的补充说明；API 限制最多 1,000 个字符 |
+
+四个外键都使用 `ON DELETE RESTRICT`，阻止删除仍被引用的记录。`quantity`、`old_quantity` 和 `new_quantity` 的范围为 `0` 到 `4294967295`；有符号差值可以表示这一完整范围内的增加和减少。
+
+应用会在请求验证和事务内再次检查原因是否已启用，且类型是否为 `inventory_adjustment`。原因可用性、备注长度限制和差值计算由应用实现，并非数据库的 `CHECK` 约束或生成列。
+
 ## 设计决策
 
 - **五张业务表。** 一个仓库或商品可以关联多个批次，每个批次属于一个仓库和一个商品。每条调整记录关联一个批次和一个预定义原因。外键限制删除仍被引用的数据。
